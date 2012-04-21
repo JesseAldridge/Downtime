@@ -1,9 +1,16 @@
 
-import urllib2, os, time
+import urllib2, os, time, shutil, socket, sys
 from datetime import datetime
-from os.path import exists
+from os.path import exists, join
 
-if exists('downtime.txt'):  os.remove('downtime.txt')
+# Run in background.  Store output in networks dir.  Ping google.
+
+if os.fork():
+    sys.exit()
+
+if exists('networks'):
+    shutil.rmtree('networks')
+os.mkdir('networks')
 
 while True:
     try:
@@ -11,6 +18,9 @@ while True:
         status = 'ok'
     except urllib2.URLError:
         status = 'down'
+
+    # Append timestamped status to file named with current ip.
+
     now = datetime.now()
     minute = str(now.minute)
     if len(minute) == 1:
@@ -20,6 +30,9 @@ while True:
                 minute, 'AM' if now.hour < 12 else 'PM')
     status_line = date_str + ' ' + status
     print status_line
-    with open('downtime.txt', 'a') as f:
+    path = join('networks', socket.gethostbyname(socket.gethostname()))
+    path += '.txt'
+    with open(path, 'a') as f:
         f.write(status_line + '\n')
     time.sleep(60)
+
