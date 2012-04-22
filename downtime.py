@@ -3,14 +3,16 @@ import urllib2, os, time, shutil, socket, sys
 from datetime import datetime
 from os.path import exists, join
 
+from plot import plot_files
+
 # Run in background.  Store output in networks dir.  Ping google.
 
 if os.fork():
     sys.exit()
 
-if exists('networks'):
-    shutil.rmtree('networks')
-os.mkdir('networks')
+if exists('raw_out'):
+    shutil.rmtree('raw_out')
+os.mkdir('raw_out')
 
 while True:
     try:
@@ -30,9 +32,10 @@ while True:
                 minute, 'AM' if now.hour < 12 else 'PM')
     status_line = date_str + ' ' + status
     print status_line
-    path = join('networks', socket.gethostbyname(socket.gethostname()))
+    path = join('raw_out', socket.gethostbyname(socket.gethostname()))
     path += '.txt'
     with open(path, 'a') as f:
         f.write(status_line + '\n')
+    plot_files()
     time.sleep(60)
 
