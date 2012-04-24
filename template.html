@@ -7,14 +7,20 @@
 <script type="application/processing">
 
 void setup() {{
-    size( 400, 30 );
-    initial_status = '{0}'
-    slices = {1};
-    //slices = [[0, .5], [.5, 1]];
+    tline_height = 10
+    slice_jsons = {0};
+    size( 400, slice_jsons.length * 30 );
 }}
 
 void draw() {{
-    var startx = width * .1, starty = 10;
+    for(var i = 0; i < slice_jsons.length; i++) {{
+        var j = slice_jsons[i];
+        draw_slices(j.initial_status, j.slices, i);
+    }}
+}}
+
+void draw_slices(initial_status, slices, tline_count) {{
+    var startx = width * .1, starty = 10 + tline_count * tline_height * 2;
     var rect_width = width * .8;
     var status = initial_status;
     for(var i = 0; i < slices.length; i++) {{
@@ -28,10 +34,16 @@ void draw() {{
         }}
         var slice_start = slices[i][0], slice_width = slices[i][1]
         rect(slice_start * rect_width + startx, starty,
-             slice_width * rect_width, 10);
+             slice_width * rect_width, tline_height);
     }}
 }}
+
 </script>
 <canvas></canvas>
+<ul style='position:absolute; width:200px; top:0px; left:400px; list-style:none'>
+    <li>All time</li>
+    <li>Last 24 hours</li>
+    <li>Last hour</li>
+</ul>
 </body>
 </html>

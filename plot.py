@@ -14,14 +14,30 @@ def plot_files():
 
 
 def plot(filename):
-
-    # Read file.  Build timeline, eg:
-
-    # [(start=0, status='up'), (start=10, status='down'),
-    #  (start=11, status='up')]
+    # Read file.  Write html template.
 
     with open(join('raw_out', filename)) as f:
         text = f.read()
+
+    lines = text.strip().splitlines()
+    if len(lines) <= 1:
+        return
+
+    slice_tuples = [make_slices(x) for x in
+                    lines, lines[-60 * 24:], lines[-60:]]
+
+    with open('template.html') as f:
+        template_str = f.read()
+    out_path = join('html_out', filename.rsplit('.', 1)[0] + '.html')
+    with open(out_path, 'w') as f:
+        f.write(template_str.format(slice_tuples))
+
+
+def make_slices(lines):
+    #Build timeline, eg:
+
+    # [(start=0, status='up'), (start=10, status='down'),
+    #  (start=11, status='up')]
 
     def parse_line(line):
         dt_str, status = line.rsplit(' ', 1)
@@ -33,9 +49,6 @@ def plot(filename):
         timeline.append(Shift(start_mins=minutes, status=status))
 
     timeline = []
-    lines = text.strip().splitlines()
-    if len(lines) <= 1:
-        return
     start_dt, status = parse_line(lines[0])
     store_flip(start_dt, status)
     prev_status = status
@@ -46,7 +59,7 @@ def plot(filename):
             store_flip(dt, status)
     end_dt = dt
 
-    # Normalize status shift times for use as rects.  Write html template.
+    # Normalize status shift times for use as rects.
 
     print 'timeline:', timeline
     total_minutes = (end_dt - start_dt).seconds / 60.
@@ -60,13 +73,8 @@ def plot(filename):
         rect_left = shift.start_mins / total_minutes
         rect_width = (shift_end - shift.start_mins) / total_minutes
         rel_slices.append([rect_left, rect_width])
+    return {'slices':rel_slices, 'initial_status':timeline[0].status}
 
-    with open('template.html') as f:
-        template_str = f.read()
-    out_path = join('html_out', filename.rsplit('.', 1)[0] + '.html')
-    with open(out_path, 'w') as f:
-        print 'str(rel_slices):', str(rel_slices)
-        f.write(template_str.format(timeline[0].status, str(rel_slices)))
 
 class Shift:
     def __init__(self, **kw):
