@@ -1,27 +1,32 @@
 import os, shutil
+from collections import defaultdict
 from os.path import join, exists
 from datetime import datetime
 
 def plot_files():
-    # Prepare html_out dir.  Plot all files in raw_out dir.
+    # From raw_out to html_out.  Group similar ips.
 
     if exists('html_out'):
         shutil.rmtree('html_out')
     os.mkdir('html_out')
 
+    groups = defaultdict(list)
     for filename in os.listdir('raw_out'):
-        plot(filename)
+        with open(join('raw_out', filename)) as f:
+            lines = f.read().strip().splitlines()
+        groups[filename.rsplit('.', 2)[0]].extend(lines)
+
+    def by_time(line):
+        dt, _ = parse_line(line)
+        return dt
+
+    for key, lines in groups.iteritems():
+        lines.sort(key=by_time)
+        plot(key + '.txt', lines)
 
 
-def plot(filename):
+def plot(filename, lines):
     # Read file.  Write html template.
-
-    with open(join('raw_out', filename)) as f:
-        text = f.read()
-
-    lines = text.strip().splitlines()
-    if len(lines) <= 1:
-        return
 
     slice_tuples = [make_slices(x) for x in
                     lines, lines[-60 * 24:], lines[-60:]]
@@ -33,16 +38,20 @@ def plot(filename):
         f.write(template_str.format(slice_tuples))
 
 
+def parse_line(line):
+    dt_str, status = line.rsplit(' ', 1)
+    dt_str = dt_str.replace(' 0:', ' 12:')
+    return datetime.strptime(dt_str, '%m/%d/%Y %I:%M %p'), status
+
+
 def make_slices(lines):
     #Build timeline, eg:
 
     # [(start=0, status='up'), (start=10, status='down'),
     #  (start=11, status='up')]
 
-    def parse_line(line):
-        dt_str, status = line.rsplit(' ', 1)
-        dt_str = dt_str.replace(' 0:', ' 12:')
-        return datetime.strptime(dt_str, '%m/%d/%Y %I:%M %p'), status
+    if len(lines) <= 1:
+        return
 
     def store_flip(dt, status):
         minutes = (dt - start_dt).seconds / 60
