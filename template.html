@@ -9,10 +9,11 @@
 void setup() {{
     tline_height = 10
     slice_jsons = {0};
-    size( 400, slice_jsons.length * 30 );
+    size(400, slice_jsons.length * 30);
 }}
 
 void draw() {{
+    background(255,255,255);
     for(var i = 0; i < slice_jsons.length; i++) {{
         var j = slice_jsons[i];
         draw_slices(j.initial_status, j.slices, i);
@@ -20,9 +21,12 @@ void draw() {{
 }}
 
 void draw_slices(initial_status, slices, tline_count) {{
-    var startx = width * .1, starty = 10 + tline_count * tline_height * 2;
-    var rect_width = width * .8;
+    var startx = width * .05, starty = 10 + tline_count * tline_height * 2;
+    var rect_width = width * .9;
     var status = initial_status;
+    stroke(0,0,0);
+    rect(startx - 1, starty - 1, rect_width + 1, tline_height + 1);
+    noStroke();
     for(var i = 0; i < slices.length; i++) {{
         if(status == 'ok') {{
             fill(0,255,0)
