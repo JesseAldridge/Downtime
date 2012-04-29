@@ -72,6 +72,8 @@ def make_slices(lines):
 
     print 'timeline:', timeline
     total_minutes = (end_dt - start_dt).seconds / 60.
+    if total_minutes == 0:
+        return
     rel_slices = []
     for i in range(len(timeline)):
         shift = timeline[i]
