@@ -10,9 +10,8 @@ from plot import plot_files
 if os.fork():
     sys.exit()
 
-if exists('raw_out'):
-    shutil.rmtree('raw_out')
-os.mkdir('raw_out')
+if not exists('raw_out'):
+    os.mkdir('raw_out')
 
 while True:
     try:
