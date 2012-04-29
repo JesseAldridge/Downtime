@@ -4,3 +4,5 @@ What about when uptime overwhelms downtime?  Can't see where downtime occurred.
 Shades of green.
     Divide timeline into timeline_width pieces
     If there is downtime somewhere within that piece, color red
+        But then don't get accurate view of downtime...
+        Toggle?
